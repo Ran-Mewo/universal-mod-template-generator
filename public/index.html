@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minecraft Mod Template Generator</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Minecraft Mod Template Generator</h1>
+            <p>Generate a universal Minecraft mod template for multiple loaders and versions</p>
+            <p class="plugin-note"><small>For the best development experience, install the <a href="https://plugins.jetbrains.com/plugin/10057-manifold-ij" target="_blank">Manifold plugin for IntelliJ</a></small></p>
+        </header>
+
+        <main>
+            <div id="loading-template" class="loading-section">
+                <div class="spinner"></div>
+                <p>Fetching base template...</p>
+                <p><small>This may take a moment.</small></p>
+            </div>
+
+            <form id="templateForm" class="hidden form-layout">
+                <!-- Mod Properties (Left) -->
+                <div class="form-section mod-properties">
+                    <h2>Mod Properties</h2>
+                    <div class="form-group">
+                        <label for="modName">Mod Name:</label>
+                        <input type="text" id="modName" name="modName" value="My Awesome Mod" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="modId">Mod ID:</label>
+                        <input type="text" id="modId" name="modId" value="myawesomemod" required pattern="[a-z0-9_]+" title="Lowercase letters, numbers, and underscores only">
+                        <small>Lowercase letters, numbers, and underscores only</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="packageName">Package Name:</label>
+                        <input type="text" id="packageName" name="packageName" value="com.example.mymod" required pattern="[a-z][a-z0-9_]*(\.[a-z0-9_]+)*" title="Valid Java package name (e.g., com.example.mymod)">
+                        <small>Valid Java package name (e.g., com.example.mymod)</small>
+                    </div>
+                </div>
+
+                <!-- Minecraft Versions (Top Right) -->
+                <div class="form-section minecraft-versions">
+                    <h2>Minecraft Versions</h2>
+                    <div class="dropdown">
+                        <div class="dropdown-select" id="mcVersionsDropdown">Select Minecraft Versions</div>
+                        <div class="dropdown-menu" id="mcVersionsMenu">
+                            <p>Loading Minecraft versions...</p>
+                        </div>
+                    </div>
+                    <div class="selected-options" id="selectedVersions"></div>
+                </div>
+
+                <!-- Mod Loaders (Middle Right, below Minecraft Versions) -->
+                <div class="form-section mod-loaders">
+                    <h2>Mod Loaders</h2>
+                    <div class="checkbox-container">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="fabric" name="loaders" value="fabric" checked>
+                            <label for="fabric">Fabric</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="forge" name="loaders" value="forge" checked>
+                            <label for="forge">Forge</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="neoforge" name="loaders" value="neoforge" checked>
+                            <label for="neoforge">NeoForge</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" id="generateButton">Generate Template</button>
+                </div>
+            </form>
+        </main>
+
+        <footer>
+            <p>meows</p>
+        </footer>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
