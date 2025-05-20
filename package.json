@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node backend/server.js",
     "dev": "nodemon backend/server.js",
-    "deploy": "firebase deploy --only hosting"
+    "deploy": "vercel --prod"
   },
   "keywords": [],
   "author": "",
@@ -19,7 +19,7 @@
     "jszip": "^3.10.1"
   },
   "devDependencies": {
-    "firebase-tools": "^14.4.0",
-    "nodemon": "^3.1.10"
+    "nodemon": "^3.1.10",
+    "vercel": "^33.5.1"
   }
 }

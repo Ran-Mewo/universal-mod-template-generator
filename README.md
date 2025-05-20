@@ -16,12 +16,12 @@ A Node.js application that generates customized Minecraft mod templates for mult
 
 ## Development
 
-This is a Node.js application with Firebase integration.
+This is a Node.js application deployed on Vercel.
 
 ### Technologies Used
 
 - Node.js and Express
-- Firebase (Hosting)
+- Vercel (Hosting and Serverless Functions)
 - HTML/CSS/JavaScript
 - [JSZip](https://stuk.github.io/jszip/) - For handling ZIP files
 - [FileSaver.js](https://github.com/eligrey/FileSaver.js/) - For downloading files
@@ -30,14 +30,15 @@ This is a Node.js application with Firebase integration.
 
 1. Clone this repository
 2. Install dependencies: `npm install`
-3. Create a `.env` file based on `.env.example` and fill in your Firebase credentials
+3. Create a `.env` file based on `.env.example`
 4. Run the development server: `npm run dev`
 5. Open `http://localhost:3000` in your browser
 
-### Firebase Setup
+### Vercel Deployment
 
-1. Create a Firebase project in the [Firebase Console](https://console.firebase.google.com/)
-2. Deploy to Firebase: `npm run deploy`
+1. Install Vercel CLI: `npm i -g vercel` (if not using the one included in devDependencies)
+2. Login to Vercel: `vercel login`
+3. Deploy to Vercel: `npm run deploy`
 
 ### Updating the Template
 
