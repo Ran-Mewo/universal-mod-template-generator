@@ -72,16 +72,39 @@ document.addEventListener('DOMContentLoaded', async () => {
      */
     async function fetchTemplate() {
         try {
-            // Load the template from our server endpoint that fetches from GitHub
-            const response = await fetch('/api/template');
+            try {
+                // First try to load the template from our server endpoint
+                const response = await fetch('/api/template');
 
-            if (!response.ok) {
-                throw new Error(`Failed to fetch template: ${response.status} ${response.statusText}`);
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch template: ${response.status} ${response.statusText}`);
+                }
+
+                const blob = await response.blob();
+                templateZip = await JSZip.loadAsync(blob);
+                console.log('Template loaded successfully from backend API');
+            } catch (apiError) {
+                console.error('Error fetching template from backend API:', apiError);
+                console.log('Trying to fetch template from Vercel Blob storage as fallback...');
+
+                // If backend API fails, try to fetch from Vercel Blob storage
+                try {
+                    // Note: This URL would need to be updated with the actual template blob URL
+                    const blobUrl = 'https://a98qz1tws5q9xaeb.public.blob.vercel-storage.com/universal-mod-template-generator/template.zip';
+                    const blobResponse = await fetch(blobUrl);
+
+                    if (!blobResponse.ok) {
+                        throw new Error(`Failed to fetch template from Blob storage: ${blobResponse.status} ${blobResponse.statusText}`);
+                    }
+
+                    const blob = await blobResponse.blob();
+                    templateZip = await JSZip.loadAsync(blob);
+                    console.log('Template loaded successfully from Blob storage');
+                } catch (blobError) {
+                    console.error('Error fetching template from Blob storage:', blobError);
+                    throw new Error('Failed to fetch template from both backend API and Blob storage');
+                }
             }
-
-            const blob = await response.blob();
-            templateZip = await JSZip.loadAsync(blob);
-            console.log('Template loaded successfully');
         } catch (error) {
             console.error('Error fetching template:', error);
             throw new Error(`Failed to fetch template: ${error.message}`);
@@ -96,14 +119,38 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Show loading spinner in the dropdown
             mcVersionsMenu.innerHTML = '<div class="loading-section" style="margin: 10px; box-shadow: none;"><div class="spinner" style="width: 30px; height: 30px;"></div><p>Loading Minecraft versions...</p></div>';
 
-            // Fetch compatible versions from our backend API
-            const response = await fetch('/api/compatible-versions');
+            let compatibleVersions;
 
-            if (!response.ok) {
-                throw new Error(`Failed to fetch compatible versions: ${response.status} ${response.statusText}`);
+            try {
+                // First try to fetch compatible versions from our backend API
+                const response = await fetch('/api/compatible-versions');
+
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch compatible versions: ${response.status} ${response.statusText}`);
+                }
+
+                compatibleVersions = await response.json();
+                console.log('Loaded versions from backend API');
+            } catch (apiError) {
+                console.error('Error fetching from backend API:', apiError);
+                console.log('Trying to fetch from Vercel Blob storage as fallback...');
+
+                // If backend API fails, try to fetch from Vercel Blob storage
+                try {
+                    const blobUrl = 'https://a98qz1tws5q9xaeb.public.blob.vercel-storage.com/universal-mod-template-generator/compatible-versions.json';
+                    const blobResponse = await fetch(blobUrl);
+
+                    if (!blobResponse.ok) {
+                        throw new Error(`Failed to fetch from Blob storage: ${blobResponse.status} ${blobResponse.statusText}`);
+                    }
+
+                    compatibleVersions = await blobResponse.json();
+                    console.log('Successfully loaded versions from Blob storage');
+                } catch (blobError) {
+                    console.error('Error fetching from Blob storage:', blobError);
+                    throw new Error('Failed to fetch versions from both backend API and Blob storage');
+                }
             }
-
-            const compatibleVersions = await response.json();
 
             // Clear the dropdown
             mcVersionsMenu.innerHTML = '';

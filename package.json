@@ -6,12 +6,18 @@
   "scripts": {
     "start": "node backend/server.js",
     "dev": "nodemon backend/server.js",
-    "deploy": "vercel --prod"
+    "deploy": "vercel --prod",
+    "generate-og": "node scripts/generate-og-image.js",
+    "generate-favicon": "node scripts/generate-favicon.js",
+    "generate-assets": "npm run generate-og && npm run generate-favicon"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@vercel/analytics": "^1.5.0",
+    "@vercel/blob": "^1.0.2",
+    "@vercel/speed-insights": "^1.2.0",
     "axios": "^1.9.0",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
@@ -20,6 +26,7 @@
   },
   "devDependencies": {
     "nodemon": "^3.1.10",
+    "puppeteer": "^22.15.0",
     "vercel": "^33.5.1"
   }
 }

@@ -5,6 +5,18 @@ const cors = require('cors');
 const path = require('path');
 const axios = require('axios');
 
+// Import Vercel Analytics, Speed Insights, and Blob storage
+let analytics, speedInsights;
+try {
+  analytics = require('@vercel/analytics');
+  speedInsights = require('@vercel/speed-insights');
+} catch (error) {
+  console.log('Vercel analytics modules not available in development mode');
+}
+
+// Import Blob storage functions
+const blobStorage = require('./blob-storage');
+
 // Initialize Express
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -66,6 +78,30 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../public')));
 
+// Add Vercel Analytics middleware if available
+if (analytics) {
+  if (typeof analytics.default === 'function') {
+    app.use(analytics.default());
+  } else if (typeof analytics.inject === 'function') {
+    app.use((req, res, next) => {
+      analytics.inject();
+      next();
+    });
+  }
+}
+
+// Add Vercel Speed Insights middleware if available
+if (speedInsights) {
+  if (typeof speedInsights.default === 'function') {
+    app.use(speedInsights.default());
+  } else if (typeof speedInsights.injectSpeedInsights === 'function') {
+    app.use((req, res, next) => {
+      speedInsights.injectSpeedInsights();
+      next();
+    });
+  }
+}
+
 // Fetch template from GitHub and cache it in memory
 async function fetchTemplate() {
   if (templateCache.fetching) {
@@ -85,6 +121,9 @@ async function fetchTemplate() {
     templateCache.data = response.data;
     templateCache.lastFetched = new Date();
     console.log(`Template fetched successfully at ${templateCache.lastFetched}`);
+
+    // Store template in Blob storage
+    await blobStorage.storeTemplate(response.data);
   } catch (error) {
     console.error('Error fetching template:', error.message);
   } finally {
@@ -112,6 +151,9 @@ async function fetchMinecraftVersions() {
     minecraftVersionsCache.data = releaseVersions;
     minecraftVersionsCache.lastFetched = new Date();
     console.log(`Minecraft versions fetched successfully at ${minecraftVersionsCache.lastFetched}`);
+
+    // Store in Blob storage
+    await blobStorage.storeMinecraftVersions(releaseVersions);
 
     return releaseVersions;
   } catch (error) {
@@ -152,6 +194,9 @@ async function fetchFabricVersions() {
     fabricVersionsCache.data = fabricVersions;
     fabricVersionsCache.lastFetched = new Date();
     console.log(`Fabric versions fetched successfully at ${fabricVersionsCache.lastFetched}`);
+
+    // Store in Blob storage
+    await blobStorage.storeFabricVersions(fabricVersions);
 
     return fabricVersions;
   } catch (error) {
@@ -213,6 +258,9 @@ async function fetchForgeVersions() {
     forgeVersionsCache.data = forgeVersions;
     forgeVersionsCache.lastFetched = new Date();
     console.log(`Forge versions fetched successfully at ${forgeVersionsCache.lastFetched}`);
+
+    // Store in Blob storage
+    await blobStorage.storeForgeVersions(forgeVersions);
 
     return forgeVersions;
   } catch (error) {
@@ -279,6 +327,9 @@ async function fetchNeoForgeVersions() {
     neoforgeVersionsCache.data = neoforgeVersions;
     neoforgeVersionsCache.lastFetched = new Date();
     console.log(`NeoForge versions fetched successfully at ${neoforgeVersionsCache.lastFetched}`);
+
+    // Store in Blob storage
+    await blobStorage.storeNeoForgeVersions(neoforgeVersions);
 
     return neoforgeVersions;
   } catch (error) {
@@ -436,6 +487,9 @@ async function fetchFabricApiVersions() {
     fabricApiVersionsCache.lastFetched = new Date();
     console.log(`Fabric API versions fetched successfully at ${fabricApiVersionsCache.lastFetched}`);
 
+    // Store in Blob storage
+    await blobStorage.storeFabricApiVersions(fabricApiVersions);
+
     return fabricApiVersions;
   } catch (error) {
     console.error('Error fetching Fabric API versions:', error.message);
@@ -561,6 +615,9 @@ app.get('/api/compatible-versions', async (req, res) => {
         loaders: loaderVersions
       };
     });
+
+    // Store compatible versions in Blob storage
+    await blobStorage.storeCompatibleVersions(compatibleVersions);
 
     return res.json(compatibleVersions);
   } catch (error) {
