@@ -541,12 +541,16 @@ async function fetchAllVersions() {
   try {
     // Fetch all versions in parallel
     // Note: fetchFabricVersions will also fetch Fabric API versions
-    await Promise.all([
-      fetchMinecraftVersions(),
-      fetchFabricVersions(),
-      fetchForgeVersions(),
-      fetchNeoForgeVersions()
-    ]);
+    // await Promise.all([
+    //   fetchMinecraftVersions(),
+    //   fetchFabricVersions(),
+    //   fetchForgeVersions(),
+    //   fetchNeoForgeVersions()
+    // ]);
+    await fetchMinecraftVersions();
+    await fetchFabricVersions();
+    await fetchForgeVersions();
+    await fetchNeoForgeVersions();
 
     console.log('All versions fetched successfully');
 
