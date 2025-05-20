@@ -59,6 +59,12 @@ let neoforgeVersionsCache = {
   fetching: false
 };
 
+// Global variable for compatible versions
+let compatibleVersionsCache = {
+  data: null,
+  lastFetched: null
+};
+
 // GitHub repository URL
 const GITHUB_ZIP_URL = 'https://github.com/Ran-Mewo/universal-mod-template/archive/refs/heads/master.zip';
 
@@ -499,6 +505,37 @@ async function fetchFabricApiVersions() {
   }
 }
 
+// Function to generate compatible versions
+function generateCompatibleVersions() {
+  try {
+    // Get Minecraft versions from cache
+    const mcVersions = minecraftVersionsCache.data || [];
+    const fabricVersions = fabricVersionsCache.data || {};
+    const fabricApiVersions = fabricApiVersionsCache.data || {};
+    const forgeVersions = forgeVersionsCache.data || {};
+    const neoforgeVersions = neoforgeVersionsCache.data || {};
+
+    // Process each Minecraft version to add loader compatibility
+    return mcVersions.map(version => {
+      const loaderVersions = getModLoaderVersions(
+        version.id,
+        fabricVersions,
+        fabricApiVersions,
+        forgeVersions,
+        neoforgeVersions
+      );
+
+      return {
+        ...version,
+        loaders: loaderVersions
+      };
+    });
+  } catch (error) {
+    console.error('Error generating compatible versions:', error.message);
+    return [];
+  }
+}
+
 // Fetch all versions on server start
 async function fetchAllVersions() {
   try {
@@ -512,6 +549,14 @@ async function fetchAllVersions() {
     ]);
 
     console.log('All versions fetched successfully');
+
+    // Generate compatible versions and update the global cache
+    compatibleVersionsCache.data = generateCompatibleVersions();
+    compatibleVersionsCache.lastFetched = new Date();
+    console.log(`Compatible versions generated at ${compatibleVersionsCache.lastFetched}`);
+
+    // Store compatible versions in Blob storage without awaiting
+    await blobStorage.storeCompatibleVersions(compatibleVersionsCache.data);
   } catch (error) {
     console.error('Error fetching all versions:', error.message);
   }
@@ -589,37 +634,12 @@ app.get('/api/compatible-versions', async (req, res) => {
     // If any cache is empty, trigger a fetch of all versions
     if (!minecraftVersionsCache.data || !fabricVersionsCache.data ||
         !fabricApiVersionsCache.data || !forgeVersionsCache.data ||
-        !neoforgeVersionsCache.data) {
+        !neoforgeVersionsCache.data || !compatibleVersionsCache.data) {
       await fetchAllVersions();
     }
 
-    // Get Minecraft versions from cache
-    const mcVersions = minecraftVersionsCache.data || [];
-    const fabricVersions = fabricVersionsCache.data || {};
-    const fabricApiVersions = fabricApiVersionsCache.data || {};
-    const forgeVersions = forgeVersionsCache.data || {};
-    const neoforgeVersions = neoforgeVersionsCache.data || {};
-
-    // Process each Minecraft version to add loader compatibility
-    const compatibleVersions = mcVersions.map(version => {
-      const loaderVersions = getModLoaderVersions(
-        version.id,
-        fabricVersions,
-        fabricApiVersions,
-        forgeVersions,
-        neoforgeVersions
-      );
-
-      return {
-        ...version,
-        loaders: loaderVersions
-      };
-    });
-
-    // Store compatible versions in Blob storage
-    await blobStorage.storeCompatibleVersions(compatibleVersions);
-
-    return res.json(compatibleVersions);
+    // Return the cached compatible versions
+    return res.json(compatibleVersionsCache.data);
   } catch (error) {
     console.error('Error serving compatible versions:', error.message);
     return res.status(500).json({ error: 'Internal server error' });

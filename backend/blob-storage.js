@@ -24,7 +24,10 @@ const BLOB_NAMES = {
 async function storeDataInBlob(blobName, data) {
   try {
     console.log(`Storing data in Blob: ${blobName}`);
-    const { url } = await put(blobName, JSON.stringify(data), { access: BLOB_ACCESS });
+    const { url } = await put(blobName, JSON.stringify(data), {
+      access: BLOB_ACCESS,
+      allowOverwrite: true
+    });
     console.log(`Data stored successfully in Blob: ${blobName}, URL: ${url}`);
     return url;
   } catch (error) {
@@ -95,7 +98,10 @@ async function storeCompatibleVersions(versions) {
 async function storeTemplate(templateData) {
   try {
     console.log(`Storing template in Blob: ${BLOB_NAMES.TEMPLATE}`);
-    const { url } = await put(BLOB_NAMES.TEMPLATE, templateData, { access: BLOB_ACCESS });
+    const { url } = await put(BLOB_NAMES.TEMPLATE, templateData, {
+      access: BLOB_ACCESS,
+      allowOverwrite: true
+    });
     console.log(`Template stored successfully in Blob: ${BLOB_NAMES.TEMPLATE}, URL: ${url}`);
     return url;
   } catch (error) {
