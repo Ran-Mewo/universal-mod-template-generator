@@ -634,12 +634,19 @@ document.addEventListener('DOMContentLoaded', async () => {
                 continue;
             }
 
+            // Copy binary files as-is
+            if (relativePath.endsWith('.jar') || relativePath.endsWith('.zip')) {
+                const binaryContent = await zipEntry.async('uint8array');
+                newZip.file(relativePath, binaryContent);
+                continue;
+            }
+
             // Get file content
             let content;
             try {
                 content = await zipEntry.async('string');
             } catch (e) {
-                // For binary files, just copy them as-is
+                // Probably a binary file, just copy them as-is
                 const binaryContent = await zipEntry.async('uint8array');
                 newZip.file(relativePath, binaryContent);
                 continue;
