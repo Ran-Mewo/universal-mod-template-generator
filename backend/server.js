@@ -473,10 +473,12 @@ function generateCompatibleVersions() {
 async function fetchAllVersions() {
   try {
     // Fetch all versions in parallel
-    await fetchMinecraftVersions();
-    await fetchFabricVersions(); // fetchFabricVersions will also fetch Fabric API versions
-    await fetchForgeVersions();
-    await fetchNeoForgeVersions();
+    await Promise.all([
+      fetchMinecraftVersions(),
+      fetchFabricVersions(), // fetchFabricVersions will also fetch Fabric API versions
+      fetchForgeVersions(),
+      fetchNeoForgeVersions()
+    ]);
 
     console.log('All versions fetched successfully');
 
