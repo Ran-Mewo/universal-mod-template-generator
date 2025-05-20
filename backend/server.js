@@ -157,10 +157,6 @@ async function fetchMinecraftVersions() {
     minecraftVersionsCache.data = releaseVersions;
     minecraftVersionsCache.lastFetched = new Date();
     console.log(`Minecraft versions fetched successfully at ${minecraftVersionsCache.lastFetched}`);
-
-    // Store in Blob storage
-    // await blobStorage.storeMinecraftVersions(releaseVersions);
-
     return releaseVersions;
   } catch (error) {
     console.error('Error fetching Minecraft versions:', error.message);
@@ -200,10 +196,6 @@ async function fetchFabricVersions() {
     fabricVersionsCache.data = fabricVersions;
     fabricVersionsCache.lastFetched = new Date();
     console.log(`Fabric versions fetched successfully at ${fabricVersionsCache.lastFetched}`);
-
-    // Store in Blob storage
-    // await blobStorage.storeFabricVersions(fabricVersions);
-
     return fabricVersions;
   } catch (error) {
     console.error('Error fetching Fabric versions:', error.message);
@@ -264,10 +256,6 @@ async function fetchForgeVersions() {
     forgeVersionsCache.data = forgeVersions;
     forgeVersionsCache.lastFetched = new Date();
     console.log(`Forge versions fetched successfully at ${forgeVersionsCache.lastFetched}`);
-
-    // Store in Blob storage
-    // await blobStorage.storeForgeVersions(forgeVersions);
-
     return forgeVersions;
   } catch (error) {
     console.error('Error fetching Forge versions:', error.message);
@@ -333,10 +321,6 @@ async function fetchNeoForgeVersions() {
     neoforgeVersionsCache.data = neoforgeVersions;
     neoforgeVersionsCache.lastFetched = new Date();
     console.log(`NeoForge versions fetched successfully at ${neoforgeVersionsCache.lastFetched}`);
-
-    // Store in Blob storage
-    // await blobStorage.storeNeoForgeVersions(neoforgeVersions);
-
     return neoforgeVersions;
   } catch (error) {
     console.error('Error fetching NeoForge versions:', error.message);
@@ -492,10 +476,6 @@ async function fetchFabricApiVersions() {
     fabricApiVersionsCache.data = fabricApiVersions;
     fabricApiVersionsCache.lastFetched = new Date();
     console.log(`Fabric API versions fetched successfully at ${fabricApiVersionsCache.lastFetched}`);
-
-    // Store in Blob storage
-    // await blobStorage.storeFabricApiVersions(fabricApiVersions);
-
     return fabricApiVersions;
   } catch (error) {
     console.error('Error fetching Fabric API versions:', error.message);
@@ -540,24 +520,18 @@ function generateCompatibleVersions() {
 async function fetchAllVersions() {
   try {
     // Fetch all versions in parallel
-    // Note: fetchFabricVersions will also fetch Fabric API versions
-    // await Promise.all([
-    //   fetchMinecraftVersions(),
-    //   fetchFabricVersions(),
-    //   fetchForgeVersions(),
-    //   fetchNeoForgeVersions()
-    // ]);
     await fetchMinecraftVersions();
-    await fetchFabricVersions();
+    await fetchFabricVersions(); // fetchFabricVersions will also fetch Fabric API versions
     await fetchForgeVersions();
     await fetchNeoForgeVersions();
 
     console.log('All versions fetched successfully');
 
-    // Generate compatible versions and update the global cache
+    // Generate compatible versions and update the cache
     compatibleVersionsCache.data = generateCompatibleVersions();
     compatibleVersionsCache.lastFetched = new Date();
     console.log(`Compatible versions generated at ${compatibleVersionsCache.lastFetched}`);
+    console.log('Compatible versions:', compatibleVersionsCache.data);
 
     // Store compatible versions in Blob storage without awaiting
     await blobStorage.storeCompatibleVersions(compatibleVersionsCache.data);
