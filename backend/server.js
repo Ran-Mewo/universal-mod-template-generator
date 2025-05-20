@@ -547,6 +547,7 @@ async function fetchAllVersions() {
       fetchForgeVersions(),
       fetchNeoForgeVersions()
     ]);
+    fetchNeoForgeVersions() // Fetch neoforg again or something
 
     console.log('All versions fetched successfully');
 
