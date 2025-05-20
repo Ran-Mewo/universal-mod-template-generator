@@ -20,7 +20,7 @@
             position: relative;
             overflow: hidden;
         }
-        
+
         .gradient-bg {
             position: absolute;
             top: 0;
@@ -30,7 +30,7 @@
             background: linear-gradient(135deg, rgba(31, 31, 31, 1) 0%, rgba(42, 42, 42, 1) 100%);
             z-index: -1;
         }
-        
+
         .accent-line {
             position: absolute;
             top: 0;
@@ -39,7 +39,7 @@
             height: 10px;
             background: linear-gradient(90deg, #ff006a, #ff4b93);
         }
-        
+
         .content {
             display: flex;
             flex-direction: column;
@@ -49,26 +49,26 @@
             padding: 40px;
             max-width: 80%;
         }
-        
+
         h1 {
             font-size: 72px;
             margin: 0 0 20px 0;
             color: #ff006a;
             text-shadow: 0 0 20px rgba(255, 0, 106, 0.5);
         }
-        
+
         p {
             font-size: 32px;
             margin: 0;
             line-height: 1.4;
         }
-        
+
         .loaders {
             display: flex;
             margin-top: 40px;
             gap: 30px;
         }
-        
+
         .loader-badge {
             background-color: #2a2a2a;
             border: 2px solid #3a3a3a;
@@ -78,22 +78,22 @@
             font-weight: bold;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
         }
-        
+
         .fabric {
             color: #d8dee9;
             border-color: #5f9dd2;
         }
-        
+
         .forge {
             color: #d8dee9;
             border-color: #f57c00;
         }
-        
+
         .neoforge {
             color: #d8dee9;
             border-color: #7e57c2;
         }
-        
+
         .corner-decoration {
             position: absolute;
             width: 200px;
@@ -101,12 +101,12 @@
             border-radius: 50%;
             background: radial-gradient(circle, rgba(255, 0, 106, 0.2) 0%, rgba(255, 0, 106, 0) 70%);
         }
-        
+
         .top-left {
             top: -100px;
             left: -100px;
         }
-        
+
         .bottom-right {
             bottom: -100px;
             right: -100px;
@@ -116,13 +116,11 @@
 <body>
     <div class="gradient-bg"></div>
     <div class="accent-line"></div>
-    <div class="corner-decoration top-left"></div>
-    <div class="corner-decoration bottom-right"></div>
-    
+
     <div class="content">
         <h1>Minecraft Mod Template Generator</h1>
         <p>Generate universal mod templates for multiple loaders and Minecraft versions</p>
-        
+
         <div class="loaders">
             <div class="loader-badge fabric">Fabric</div>
             <div class="loader-badge forge">Forge</div>
