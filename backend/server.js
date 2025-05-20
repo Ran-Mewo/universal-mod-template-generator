@@ -24,39 +24,33 @@ const PORT = process.env.PORT || 3000;
 // Template cache
 let templateCache = {
   data: null,
-  lastFetched: null,
-  fetching: false
+  lastFetched: null
 };
 
 // Version caches
 let minecraftVersionsCache = {
   data: null,
-  lastFetched: null,
-  fetching: false
+  lastFetched: null
 };
 
 let fabricVersionsCache = {
   data: null,
-  lastFetched: null,
-  fetching: false
+  lastFetched: null
 };
 
 let fabricApiVersionsCache = {
   data: null,
-  lastFetched: null,
-  fetching: false
+  lastFetched: null
 };
 
 let forgeVersionsCache = {
   data: null,
-  lastFetched: null,
-  fetching: false
+  lastFetched: null
 };
 
 let neoforgeVersionsCache = {
   data: null,
-  lastFetched: null,
-  fetching: false
+  lastFetched: null
 };
 
 // Global variable for compatible versions
@@ -110,12 +104,7 @@ if (speedInsights) {
 
 // Fetch template from GitHub and cache it in memory
 async function fetchTemplate() {
-  if (templateCache.fetching) {
-    return;
-  }
-
   try {
-    templateCache.fetching = true;
     console.log('Fetching template from GitHub...');
 
     const response = await axios({
@@ -132,19 +121,12 @@ async function fetchTemplate() {
     await blobStorage.storeTemplate(response.data);
   } catch (error) {
     console.error('Error fetching template:', error.message);
-  } finally {
-    templateCache.fetching = false;
   }
 }
 
 // Fetch Minecraft versions and cache them
 async function fetchMinecraftVersions() {
-  if (minecraftVersionsCache.fetching) {
-    return minecraftVersionsCache.data;
-  }
-
   try {
-    minecraftVersionsCache.fetching = true;
     console.log('Fetching Minecraft versions...');
 
     const response = await axios.get(MINECRAFT_VERSIONS_URL);
@@ -161,19 +143,12 @@ async function fetchMinecraftVersions() {
   } catch (error) {
     console.error('Error fetching Minecraft versions:', error.message);
     return [];
-  } finally {
-    minecraftVersionsCache.fetching = false;
   }
 }
 
 // Fetch Fabric versions and cache them
 async function fetchFabricVersions() {
-  if (fabricVersionsCache.fetching) {
-    return fabricVersionsCache.data;
-  }
-
   try {
-    fabricVersionsCache.fetching = true;
     console.log('Fetching Fabric versions...');
 
     // Fetch game versions
@@ -196,30 +171,24 @@ async function fetchFabricVersions() {
     fabricVersionsCache.data = fabricVersions;
     fabricVersionsCache.lastFetched = new Date();
     console.log(`Fabric versions fetched successfully at ${fabricVersionsCache.lastFetched}`);
-    return fabricVersions;
-  } catch (error) {
-    console.error('Error fetching Fabric versions:', error.message);
-    return {};
-  } finally {
-    fabricVersionsCache.fetching = false;
 
-    // Fetch Fabric API versions now since they depend on Fabric versions. We await this to ensure all data is ready when fetchFabricVersions completes
+    // Fetch Fabric API versions now since they depend on Fabric versions
     try {
       await fetchFabricApiVersions();
     } catch (apiError) {
       console.error('Error fetching Fabric API versions after Fabric versions:', apiError.message);
     }
+
+    return fabricVersions;
+  } catch (error) {
+    console.error('Error fetching Fabric versions:', error.message);
+    return {};
   }
 }
 
 // Fetch Forge versions and cache them
 async function fetchForgeVersions() {
-  if (forgeVersionsCache.fetching) {
-    return forgeVersionsCache.data;
-  }
-
   try {
-    forgeVersionsCache.fetching = true;
     console.log('Fetching Forge versions...');
 
     const response = await axios.get(FORGE_VERSIONS_URL);
@@ -260,19 +229,12 @@ async function fetchForgeVersions() {
   } catch (error) {
     console.error('Error fetching Forge versions:', error.message);
     return {};
-  } finally {
-    forgeVersionsCache.fetching = false;
   }
 }
 
 // Fetch NeoForge versions and cache them
 async function fetchNeoForgeVersions() {
-  if (neoforgeVersionsCache.fetching) {
-    return neoforgeVersionsCache.data;
-  }
-
   try {
-    neoforgeVersionsCache.fetching = true;
     console.log('Fetching NeoForge versions...');
 
     const response = await axios.get(NEOFORGE_VERSIONS_URL);
@@ -325,8 +287,6 @@ async function fetchNeoForgeVersions() {
   } catch (error) {
     console.error('Error fetching NeoForge versions:', error.message);
     return {};
-  } finally {
-    neoforgeVersionsCache.fetching = false;
   }
 }
 
@@ -369,12 +329,7 @@ function getModLoaderVersions(mcVersion, fabricVersions, fabricApiVersions, forg
 
 // Fetch Fabric API versions and cache them
 async function fetchFabricApiVersions() {
-  if (fabricApiVersionsCache.fetching) {
-    return fabricApiVersionsCache.data;
-  }
-
   try {
-    fabricApiVersionsCache.fetching = true;
     console.log('Fetching Fabric API versions...');
 
     const response = await axios.get(FABRIC_API_VERSIONS_URL);
@@ -480,8 +435,6 @@ async function fetchFabricApiVersions() {
   } catch (error) {
     console.error('Error fetching Fabric API versions:', error.message);
     return {};
-  } finally {
-    fabricApiVersionsCache.fetching = false;
   }
 }
 
