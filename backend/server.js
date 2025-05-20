@@ -4,6 +4,37 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const axios = require('axios');
+const https = require('https');
+
+// Configure axios defaults
+axios.defaults.timeout = 30000; // 30 seconds default timeout
+
+// Create custom axios instances with different timeout settings
+const axiosLongTimeout = axios.create({
+  timeout: 60000, // 60 seconds for larger files
+  httpsAgent: new https.Agent({
+    keepAlive: true,
+    timeout: 60000,
+    rejectUnauthorized: true
+  })
+});
+
+// Configure retry logic for axios
+axios.interceptors.response.use(undefined, async (err) => {
+  const { config } = err;
+  if (!config || !config.retry) {
+    return Promise.reject(err);
+  }
+  config.__retryCount = config.__retryCount || 0;
+  if (config.__retryCount >= config.retry) {
+    return Promise.reject(err);
+  }
+  config.__retryCount += 1;
+  console.log(`Retrying request (${config.__retryCount}/${config.retry}): ${config.url}`);
+  const backoff = new Promise(resolve => setTimeout(resolve, config.retryDelay || 1000));
+  await backoff;
+  return axios(config);
+});
 
 // Import Vercel Analytics, Speed Insights, and Blob storage
 let analytics, speedInsights;
@@ -20,6 +51,9 @@ const blobStorage = require('./blob-storage');
 // Initialize Express
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Configure server timeouts
+app.set('timeout', 120000); // 2 minutes timeout
 
 // Template cache
 let templateCache = {
@@ -76,13 +110,20 @@ const FABRIC_API_VERSIONS_URL = 'https://api.modrinth.com/v2/project/fabric-api/
 const FORGE_VERSIONS_URL = 'https://files.minecraftforge.net/net/minecraftforge/forge/promotions_slim.json';
 const NEOFORGE_VERSIONS_URL = 'https://maven.neoforged.net/api/maven/versions/releases/net/neoforged/neoforge';
 
+// Request configuration
+const DEFAULT_RETRY_COUNT = 3;
+const DEFAULT_RETRY_DELAY = 1000; // 1 second
+
 // Cache expiration time (in milliseconds)
 const CACHE_EXPIRATION = 24 * 60 * 60 * 1000; // 24 hours
 
 // Middleware
 app.use(cors());
-app.use(express.json());
-app.use(express.static(path.join(__dirname, '../public')));
+app.use(express.json({ limit: '10mb' })); // Increase JSON payload limit
+app.use(express.urlencoded({ extended: true, limit: '10mb' })); // Add URL-encoded parser with increased limit
+app.use(express.static(path.join(__dirname, '../public'), {
+  maxAge: '1d' // Cache static assets for 1 day
+}));
 
 // Add Vercel Analytics middleware if available
 if (analytics) {
@@ -118,10 +159,12 @@ async function fetchTemplate() {
     templateCache.fetching = true;
     console.log('Fetching template from GitHub...');
 
-    const response = await axios({
+    const response = await axiosLongTimeout({
       url: GITHUB_ZIP_URL,
       method: 'GET',
-      responseType: 'arraybuffer'
+      responseType: 'arraybuffer',
+      retry: DEFAULT_RETRY_COUNT,
+      retryDelay: DEFAULT_RETRY_DELAY
     });
 
     templateCache.data = response.data;
@@ -147,7 +190,10 @@ async function fetchMinecraftVersions() {
     minecraftVersionsCache.fetching = true;
     console.log('Fetching Minecraft versions...');
 
-    const response = await axios.get(MINECRAFT_VERSIONS_URL);
+    const response = await axios.get(MINECRAFT_VERSIONS_URL, {
+      retry: DEFAULT_RETRY_COUNT,
+      retryDelay: DEFAULT_RETRY_DELAY
+    });
 
     // Filter for release versions, exclude version 1.0, and sort by release date (newest first)
     const releaseVersions = response.data.versions
@@ -181,10 +227,16 @@ async function fetchFabricVersions() {
     console.log('Fetching Fabric versions...');
 
     // Fetch game versions
-    const gameResponse = await axios.get(FABRIC_GAME_VERSIONS_URL);
+    const gameResponse = await axios.get(FABRIC_GAME_VERSIONS_URL, {
+      retry: DEFAULT_RETRY_COUNT,
+      retryDelay: DEFAULT_RETRY_DELAY
+    });
 
     // Fetch loader versions
-    const loaderResponse = await axios.get(FABRIC_LOADER_VERSIONS_URL);
+    const loaderResponse = await axios.get(FABRIC_LOADER_VERSIONS_URL, {
+      retry: DEFAULT_RETRY_COUNT,
+      retryDelay: DEFAULT_RETRY_DELAY
+    });
 
     // Get the latest loader version
     const latestLoader = loaderResponse.data.length > 0 ? loaderResponse.data[0].version : null;
@@ -230,7 +282,10 @@ async function fetchForgeVersions() {
     forgeVersionsCache.fetching = true;
     console.log('Fetching Forge versions...');
 
-    const response = await axios.get(FORGE_VERSIONS_URL);
+    const response = await axios.get(FORGE_VERSIONS_URL, {
+      retry: DEFAULT_RETRY_COUNT,
+      retryDelay: DEFAULT_RETRY_DELAY
+    });
 
     if (!response.data.promos) {
       forgeVersionsCache.data = {};
@@ -287,7 +342,10 @@ async function fetchNeoForgeVersions() {
     neoforgeVersionsCache.fetching = true;
     console.log('Fetching NeoForge versions...');
 
-    const response = await axios.get(NEOFORGE_VERSIONS_URL);
+    const response = await axios.get(NEOFORGE_VERSIONS_URL, {
+      retry: DEFAULT_RETRY_COUNT,
+      retryDelay: DEFAULT_RETRY_DELAY
+    });
 
     if (!response.data.versions || response.data.versions.length === 0) {
       neoforgeVersionsCache.data = {};
@@ -393,7 +451,10 @@ async function fetchFabricApiVersions() {
     fabricApiVersionsCache.fetching = true;
     console.log('Fetching Fabric API versions...');
 
-    const response = await axios.get(FABRIC_API_VERSIONS_URL);
+    const response = await axios.get(FABRIC_API_VERSIONS_URL, {
+      retry: DEFAULT_RETRY_COUNT,
+      retryDelay: DEFAULT_RETRY_DELAY
+    });
 
     if (!response.data || !Array.isArray(response.data)) {
       fabricApiVersionsCache.data = {};
@@ -539,15 +600,10 @@ function generateCompatibleVersions() {
 // Fetch all versions on server start
 async function fetchAllVersions() {
   try {
-    // Fetch all versions in parallel
-    // Note: fetchFabricVersions will also fetch Fabric API versions
-    await Promise.all([
-      fetchMinecraftVersions(),
-      fetchFabricVersions(),
-      fetchForgeVersions(),
-      fetchNeoForgeVersions()
-    ]);
-    fetchNeoForgeVersions() // Fetch neoforg again or something
+    await fetchMinecraftVersions();
+    await fetchFabricVersions();
+    await fetchForgeVersions();
+    await fetchNeoForgeVersions();
 
     console.log('All versions fetched successfully');
 
@@ -563,11 +619,16 @@ async function fetchAllVersions() {
   }
 }
 
-// Fetch the template on server start
-fetchTemplate();
+// Stagger initialization to avoid overwhelming the server
+// First fetch the template
+setTimeout(() => {
+  fetchTemplate();
+}, 1000); // 1 second delay
 
-// Fetch all versions on server start
-fetchAllVersions();
+// Then fetch all versions with a delay
+setTimeout(() => {
+  fetchAllVersions();
+}, 3000); // 3 seconds delay
 
 // Schedule periodic updates (every 24 hours)
 setInterval(fetchTemplate, CACHE_EXPIRATION);
