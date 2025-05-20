@@ -89,7 +89,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 // If backend API fails, try to fetch from Vercel Blob storage
                 try {
-                    // Note: This URL would need to be updated with the actual template blob URL
                     const blobUrl = 'https://a98qz1tws5q9xaeb.public.blob.vercel-storage.com/universal-mod-template-generator/template.zip';
                     const blobResponse = await fetch(blobUrl);
 
@@ -130,6 +129,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
 
                 compatibleVersions = await response.json();
+
+                if (!compatibleVersions || !Array.isArray(compatibleVersions)) {
+                    throw new Error('Failed to fetch compatible versions: Invalid response format');
+                }
+
                 console.log('Loaded versions from backend API');
             } catch (apiError) {
                 console.error('Error fetching from backend API:', apiError);
