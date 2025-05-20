@@ -541,14 +541,14 @@ async function fetchAllVersions() {
 }
 
 // Fetch the template on server start
-fetchTemplate();
+fetchTemplate().then(_ => {
+  setInterval(fetchTemplate, CACHE_EXPIRATION);
+});
 
 // Fetch all versions on server start
-fetchAllVersions();
-
-// Schedule periodic updates (every 24 hours)
-setInterval(fetchTemplate, CACHE_EXPIRATION);
-setInterval(fetchAllVersions, CACHE_EXPIRATION);
+fetchAllVersions().then(_ => {
+  setInterval(fetchAllVersions, CACHE_EXPIRATION);
+});
 
 // Serve the template zip file
 app.get('/api/template', async (req, res) => {
