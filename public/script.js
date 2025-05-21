@@ -778,13 +778,10 @@ neoforge_loader=${neoforgeLoader}
             // and are compatible with at least one selected version
             const availableLoaders = options.selectedLoaders.filter(loader => {
                 // Check if this loader has a valid version for this Minecraft version
-                const hasValidVersion =
-                    (loader === 'fabric' && !!fabricLoader) ||
+                // Only include loaders that have valid versions for this Minecraft version
+                return (loader === 'fabric' && !!fabricLoader) ||
                     (loader === 'forge' && !!forgeLoader) ||
                     (loader === 'neoforge' && !!neoforgeLoader);
-
-                // Only include loaders that have valid versions for this Minecraft version
-                return hasValidVersion;
             });
 
             const selectedLoadersStr = availableLoaders.join(',');
