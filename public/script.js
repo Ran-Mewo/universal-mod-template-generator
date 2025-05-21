@@ -661,6 +661,20 @@ document.addEventListener('DOMContentLoaded', async () => {
                 relativePath = relativePath.replace('com/examplemod', packagePath);
             }
 
+            // Rename files with 'examplemod' in their names, but only the filename part
+            // Split the path to separate directory and filename
+            const lastSlashIndex = relativePath.lastIndexOf('/');
+            if (lastSlashIndex !== -1) {
+                const filename = relativePath.substring(lastSlashIndex + 1);
+
+                // Only rename the filename if it starts with 'examplemod' or contains '.examplemod.'
+                if (filename.startsWith('examplemod') || filename.includes('.examplemod.')) {
+                    relativePath = relativePath.substring(0, lastSlashIndex + 1) + filename.replace(/examplemod/g, options.modId);
+                }
+            } else if (relativePath.startsWith('examplemod') || relativePath.includes('.examplemod.')) {
+                relativePath = relativePath.replace(/examplemod/g, options.modId);
+            }
+
             // Replace file content
 
             // Replace package name in Java files
