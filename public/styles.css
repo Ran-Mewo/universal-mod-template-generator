@@ -262,6 +262,17 @@ footer {
     text-shadow: 0 0 5px rgba(255, 0, 106, 0.2);
 }
 
+footer a {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+footer a:hover {
+    text-decoration: underline;
+    text-shadow: 0 0 5px rgba(255, 0, 106, 0.3);
+}
+
 /* Layout styles */
 .form-layout {
     display: grid;

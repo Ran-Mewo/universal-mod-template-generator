@@ -16,8 +16,8 @@ async function generateFavicon() {
 
     // Set viewport to favicon dimensions
     await page.setViewport({
-      width: 32,
-      height: 32,
+      width: 48,
+      height: 48,
       deviceScaleFactor: 1
     });
 
@@ -51,8 +51,8 @@ async function generateFavicon() {
       </html>
     `;
 
-    // Generate favicon.png (32x32)
-    let currentHtml = generateDynamicHtml(32, 32, svgContent);
+    // Generate favicon.png (48x48)
+    let currentHtml = generateDynamicHtml(48, 48, svgContent);
     await page.setContent(currentHtml, { waitUntil: 'networkidle0' });
 
     // Take a screenshot for favicon.png with transparency
@@ -81,20 +81,20 @@ async function generateFavicon() {
       omitBackground: true // This ensures transparency is preserved
     });
 
-    // Generate favicon-48x48.png (48x48)
+    // Generate favicon-32x32.png (32x32)
     await page.setViewport({
-      width: 48,
-      height: 48,
+      width: 32,
+      height: 32,
       deviceScaleFactor: 1
     });
 
-    // Generate favicon-48x48.png (48x48)
-    currentHtml = generateDynamicHtml(48, 48, svgContent);
+    // Generate favicon-32x32.png (32x32)
+    currentHtml = generateDynamicHtml(32, 32, svgContent);
     await page.setContent(currentHtml, { waitUntil: 'networkidle0' });
 
-    const favicon48Path = path.join(__dirname, '../public/favicon-48x48.png');
+    const favicon32Path = path.join(__dirname, '../public/favicon-32x32.png');
     await page.screenshot({
-      path: favicon48Path,
+      path: favicon32Path,
       type: 'png',
       omitBackground: true // This ensures transparency is preserved
     });
@@ -103,7 +103,7 @@ async function generateFavicon() {
 
     console.log(`Favicon generated successfully at: ${faviconPath}`);
     console.log(`Apple Touch Icon generated successfully at: ${appleTouchIconPath}`);
-    console.log(`Favicon 48x48 generated successfully at: ${favicon48Path}`);
+    console.log(`Favicon 32x32 generated successfully at: ${favicon32Path}`);
   } catch (error) {
     console.error('Error generating favicon:', error);
   }
